@@ -24,7 +24,9 @@ alter table flights
 		foreign key (aircraft)
 		references aircrafts(code);
 
-
+update tech.version set
+	cur_version = 3,
+	applied = current_timestamp;
 
 ROLLBACK TRANSACTION;
 -- COMMIT 
