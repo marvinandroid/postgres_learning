@@ -41,7 +41,7 @@ select count(fl.f_id) flight_count,
 	fl.d_port_name || ' - ' || fl.a_port_name direction,
 	to_char(fl.depart_time, 'Dy HH:MM') s_time
 	from flights_tz fl
-	group by flight_number, direction, s_time
-	order by flight_number;
+	group by flight_number, direction, s_time, extract(isodow from fl.depart_time)
+	order by flight_number asc, extract(isodow from fl.depart_time) asc;
 
 COMMIT TRANSACTION;
