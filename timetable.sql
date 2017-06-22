@@ -24,7 +24,7 @@ select count(fl.f_id) flight_count,
 	order by flight_number;
 */
 
-
+create view bookings.flight_timetable as
 with flights_tz as (
 	select
 		fl.flight_id f_id,
@@ -32,16 +32,22 @@ with flights_tz as (
 		d_port.airport_name d_port_name,
 		a_port.airport_name a_port_name,
 		(fl.scheduled_departure at time zone d_port.timezone) depart_time
-		from flights fl
+		from bookings.flights fl
 		inner join airports d_port on fl.departure_airport = d_port.airport_code
 		inner join airports a_port on fl.arrival_airport = a_port.airport_code
 )
-select count(fl.f_id) flight_count,
+select 
+	count(fl.f_id) flight_count,
 	fl.f_no flight_number,
 	fl.d_port_name || ' - ' || fl.a_port_name direction,
-	to_char(fl.depart_time, 'Dy HH:MM') s_time
+	fl.d_port_name departure_airport,
+	fl.a_port_name arrival_airport,
+	to_char(fl.depart_time, 'Dy HH24:MI') f_time,
+	extract(isodow from fl.depart_time)::integer s_dow, 
+	make_time(extract(hour from fl.depart_time)::integer,
+		extract(minute from fl.depart_time)::integer, 0) s_time
 	from flights_tz fl
-	group by flight_number, direction, s_time, extract(isodow from fl.depart_time)
-	order by flight_number asc, extract(isodow from fl.depart_time) asc;
+	group by flight_number, direction, departure_airport, 
+	arrival_airport, f_time, s_dow, s_time;
 
 COMMIT TRANSACTION;
